@@ -1,0 +1,76 @@
+{
+  "name": "chalk-ts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "🎨 Modern terminal string styling library built with TypeScript - A better alternative to chalk with enhanced features and type safety",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run type-check && npm test",
+    "demo": "npm run build && node examples/demo.js",
+    "benchmark": "ts-node benchmarks/comparison.ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "chalk",
+    "color",
+    "colour",
+    "colors",
+    "terminal",
+    "console",
+    "cli",
+    "string",
+    "style",
+    "ansi",
+    "typescript",
+    "modern",
+    "formatting",
+    "text"
+  ],
+  "author": {
+    "name": "Noor Mohammad",
+    "url": "https://github.com/noorjsdivs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noorjsdivs/chalk-ts.git"
+  },
+  "homepage": "https://github.com/noorjsdivs/chalk-ts#readme",
+  "bugs": {
+    "url": "https://github.com/noorjsdivs/chalk-ts/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.17.2",
+    "jest": "^29.7.0",
+    "rollup": "^4.46.2",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.2"
+  }
+}
