@@ -1,7 +1,7 @@
-# 🎨 ChalkTS
+# 🎨 chalk-ts
 
 <div align="center">
-  <img src="https://res.cloudinary.com/duehd78sl/image/upload/v1755416064/npm-packages/chalk_z6fjpf.jpg" alt="ChalkTS Logo" width="400" />
+  <img src="https://res.cloudinary.com/duehd78sl/image/upload/v1755416064/npm-packages/chalk_z6fjpf.jpg" alt="chalk-ts Logo" width="400" />
 </div>
 
 <div align="center">
@@ -111,7 +111,7 @@ console.log(chalkTs.blueBright("Bright blue"));
 
 ### Extended Color Palette
 
-ChalkTS includes 20+ built-in colors beyond the standard ANSI colors:
+chalk-ts includes 20+ built-in colors beyond the standard ANSI colors:
 
 ```typescript
 console.log(chalkTs.orange("Orange text"));
@@ -307,7 +307,7 @@ for (let i = 0; i < 10; i++) {
 
 ## 🔗 Method Chaining
 
-ChalkTS supports full method chaining for complex styling:
+chalk-ts supports full method chaining for complex styling:
 
 ```typescript
 // Combine multiple styles
@@ -369,15 +369,15 @@ console.log(withColors.red("Red text"));
 
 ## 📊 Performance Comparison
 
-ChalkTS is designed for performance while providing more features:
+chalk-ts is designed for performance while providing more features:
 
 | Library   | Bundle Size | Features   | Performance | TypeScript |
 | --------- | ----------- | ---------- | ----------- | ---------- |
-| ChalkTS   | ~15KB       | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ |
+| chalk-ts  | ~15KB       | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ |
 | Chalk     | ~17KB       | ⭐⭐⭐     | ⭐⭐⭐⭐    | ⭐⭐⭐⭐   |
 | Colorette | ~8KB        | ⭐⭐       | ⭐⭐⭐⭐⭐  | ⭐⭐⭐     |
 
-### Why Choose ChalkTS?
+### Why Choose chalk-ts?
 
 1. **🎨 More Colors**: 20+ built-in colors vs 8 in most libraries
 2. **🎭 More Effects**: Gradient, rainbow, pulse, neon, and more
@@ -390,7 +390,7 @@ ChalkTS is designed for performance while providing more features:
 
 ## 🔄 Migration from Chalk
 
-ChalkTS is designed as a drop-in replacement for chalk:
+chalk-ts is designed as a drop-in replacement for chalk:
 
 ```typescript
 // Before (chalk)
@@ -491,7 +491,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📧 Email: [your-email@example.com](mailto:your-email@example.com)
+- 📧 Email: [dev.reactbd@gmail.com](mailto:dev.reactbd@gmail.com)
 - 🐛 Issues: [GitHub Issues](https://github.com/noorjsdivs/chalk-ts/issues)
 - 💬 Discussions: [GitHub Discussions](https://github.com/noorjsdivs/chalk-ts/discussions)
 
