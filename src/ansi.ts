@@ -1,99 +1,102 @@
 /**
  * ANSI color and style codes
+ * Mapped as [open, close]
  */
 export const ANSI_CODES = {
   // Reset
-  reset: '\u001B[0m',
+  reset: [0, 0],
 
   // Text styles
-  bold: '\u001B[1m',
-  dim: '\u001B[2m',
-  italic: '\u001B[3m',
-  underline: '\u001B[4m',
-  blink: '\u001B[5m',
-  inverse: '\u001B[7m',
-  hidden: '\u001B[8m',
-  strikethrough: '\u001B[9m',
+  bold: [1, 22],
+  dim: [2, 22],
+  italic: [3, 23],
+  underline: [4, 24],
+  blink: [5, 25],
+  inverse: [7, 27],
+  hidden: [8, 28],
+  strikethrough: [9, 29],
 
   // Foreground colors
-  black: '\u001B[30m',
-  red: '\u001B[31m',
-  green: '\u001B[32m',
-  yellow: '\u001B[33m',
-  blue: '\u001B[34m',
-  magenta: '\u001B[35m',
-  cyan: '\u001B[36m',
-  white: '\u001B[37m',
-  gray: '\u001B[90m',
-  grey: '\u001B[90m',
+  black: [30, 39],
+  red: [31, 39],
+  green: [32, 39],
+  yellow: [33, 39],
+  blue: [34, 39],
+  magenta: [35, 39],
+  cyan: [36, 39],
+  white: [37, 39],
+  gray: [90, 39],
+  grey: [90, 39],
 
   // Bright foreground colors
-  redBright: '\u001B[91m',
-  greenBright: '\u001B[92m',
-  yellowBright: '\u001B[93m',
-  blueBright: '\u001B[94m',
-  magentaBright: '\u001B[95m',
-  cyanBright: '\u001B[96m',
-  whiteBright: '\u001B[97m',
+  redBright: [91, 39],
+  greenBright: [92, 39],
+  yellowBright: [93, 39],
+  blueBright: [94, 39],
+  magentaBright: [95, 39],
+  cyanBright: [96, 39],
+  whiteBright: [97, 39],
 
   // Background colors
-  bgBlack: '\u001B[40m',
-  bgRed: '\u001B[41m',
-  bgGreen: '\u001B[42m',
-  bgYellow: '\u001B[43m',
-  bgBlue: '\u001B[44m',
-  bgMagenta: '\u001B[45m',
-  bgCyan: '\u001B[46m',
-  bgWhite: '\u001B[47m',
-  bgGray: '\u001B[100m',
-  bgGrey: '\u001B[100m',
+  bgBlack: [40, 49],
+  bgRed: [41, 49],
+  bgGreen: [42, 49],
+  bgYellow: [43, 49],
+  bgBlue: [44, 49],
+  bgMagenta: [45, 49],
+  bgCyan: [46, 49],
+  bgWhite: [47, 49],
+  bgGray: [100, 49],
+  bgGrey: [100, 49],
 
   // Bright background colors
-  bgRedBright: '\u001B[101m',
-  bgGreenBright: '\u001B[102m',
-  bgYellowBright: '\u001B[103m',
-  bgBlueBright: '\u001B[104m',
-  bgMagentaBright: '\u001B[105m',
-  bgCyanBright: '\u001B[106m',
-  bgWhiteBright: '\u001B[107m',
+  bgRedBright: [101, 49],
+  bgGreenBright: [102, 49],
+  bgYellowBright: [103, 49],
+  bgBlueBright: [104, 49],
+  bgMagentaBright: [105, 49],
+  bgCyanBright: [106, 49],
+  bgWhiteBright: [107, 49],
 } as const;
+
+export type AnsiCode = keyof typeof ANSI_CODES;
 
 /**
  * Check if colors are supported in the current environment
  */
 export function supportsColor(): boolean {
-  if (typeof process === 'undefined') return false;
-  
+  if (typeof process === "undefined") return false;
+
   const { env, platform, stdout } = process;
-  
+
   // Force color support
-  if (env.FORCE_COLOR === '1' || env.FORCE_COLOR === 'true') return true;
-  if (env.FORCE_COLOR === '0' || env.FORCE_COLOR === 'false') return false;
-  
+  if (env.FORCE_COLOR === "1" || env.FORCE_COLOR === "true") return true;
+  if (env.FORCE_COLOR === "0" || env.FORCE_COLOR === "false") return false;
+
   // No color support
   if (env.NO_COLOR || env.NODE_DISABLE_COLORS) return false;
-  
+
   // CI environments
-  if (env.CI && !env.GITHUB_ACTIONS) return false;
-  
+  if (env.CI && !env.GITHUB_ACTIONS) return false; // GH Actions supports truecolor
+
   // Terminal capabilities
-  if (platform === 'win32') {
-    return !!(env.TERM && env.TERM !== 'dumb');
+  if (platform === "win32") {
+    return !!(env.TERM && env.TERM !== "dumb");
   }
-  
+
   if (!stdout || !stdout.isTTY) return false;
-  
+
   const term = env.TERM?.toLowerCase();
-  if (term === 'dumb') return false;
-  
+  if (term === "dumb") return false;
+
   return !!(
     term &&
-    (term.includes('color') ||
-      term.includes('256') ||
-      term.includes('ansi') ||
-      term === 'xterm' ||
-      term === 'screen' ||
-      term === 'vt100' ||
+    (term.includes("color") ||
+      term.includes("256") ||
+      term.includes("ansi") ||
+      term === "xterm" ||
+      term === "screen" ||
+      term === "vt100" ||
       env.COLORTERM)
   );
 }
@@ -103,11 +106,78 @@ export function supportsColor(): boolean {
  */
 export function getColorLevel(): 0 | 1 | 2 | 3 {
   if (!supportsColor()) return 0;
-  
+
   const { env } = process;
-  
-  if (env.COLORTERM === 'truecolor' || env.TERM === 'xterm-256color') return 3;
-  if (env.TERM?.includes('256')) return 2;
-  
+
+  if (env.COLORTERM === "truecolor" || env.TERM === "xterm-256color") return 3;
+  if (env.TERM?.includes("256")) return 2;
+
   return 1;
+}
+
+/**
+ * Convert RGB to ANSI 256 color code
+ */
+export function rgbToAnsi256(r: number, g: number, b: number): number {
+  if (r === g && g === b) {
+    if (r < 8) return 16;
+    if (r > 248) return 231;
+    return Math.round(((r - 8) / 247) * 24) + 232;
+  }
+  return (
+    16 +
+    36 * Math.round((r / 255) * 5) +
+    6 * Math.round((g / 255) * 5) +
+    Math.round((b / 255) * 5)
+  );
+}
+
+/**
+ * Convert RGB to ANSI 16 color code
+ * Uses a simple distance metric to find the closest 16-color match
+ */
+export function rgbToAnsi16(
+  r: number,
+  g: number,
+  b: number,
+  background = false,
+): number {
+  // Basic 16 palette
+  const ansi16Palette: [number, number, number][] = [
+    [0, 0, 0], // 30: Black
+    [205, 0, 0], // 31: Red
+    [0, 205, 0], // 32: Green
+    [205, 205, 0], // 33: Yellow
+    [0, 0, 238], // 34: Blue
+    [205, 0, 205], // 35: Magenta
+    [0, 205, 205], // 36: Cyan
+    [229, 229, 229], // 37: White
+    [127, 127, 127], // 90: Bright Black (Gray)
+    [255, 0, 0], // 91: Bright Red
+    [0, 255, 0], // 92: Bright Green
+    [255, 255, 0], // 93: Bright Yellow
+    [92, 92, 255], // 94: Bright Blue
+    [255, 0, 255], // 95: Bright Magenta
+    [0, 255, 255], // 96: Bright Cyan
+    [255, 255, 255], // 97: Bright White
+  ];
+
+  let minDistance = Infinity;
+  let closestIndex = 0;
+
+  for (let i = 0; i < ansi16Palette.length; i++) {
+    const [pr, pg, pb] = ansi16Palette[i]!;
+    const distance = (r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2;
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestIndex = i;
+    }
+  }
+
+  // Map index to ANSI code based on background flag
+  if (closestIndex < 8) {
+    return closestIndex + (background ? 40 : 30);
+  } else {
+    return closestIndex - 8 + (background ? 100 : 90);
+  }
 }

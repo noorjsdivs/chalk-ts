@@ -1,19 +1,21 @@
 /**
  * 🎨 ChalkTS - Modern terminal string styling library
- * 
+ *
  * A powerful, TypeScript-first alternative to chalk with enhanced features,
  * better performance, and modern development experience.
- * 
+ *
  * @version 1.0.0
  * @author Noor Mohammad
  * @repository https://github.com/noorjsdivs/chalk-ts
  */
 
 // Core exports
-export { ChalkTS, chalkTs as default } from './chalk';
-export * from './ansi';
-export * from './colors';
-export * from './effects';
+export { ChalkTS, chalkTs as default } from "./chalk";
+export * from "./ansi";
+export * from "./colors";
+export * from "./effects";
+export * from "./gradient";
+export * from "./theme";
 
 // Convenience exports for individual styling functions
 export {
@@ -69,11 +71,13 @@ export {
   turquoise,
   gold,
   silver,
-} from './chalk';
+} from "./chalk";
 
 // Re-export the default instance as a named export
-export { chalkTs as chalk } from './chalk';
+export { chalkTs as chalk } from "./chalk";
 
 // Type exports
-export type { StyleFunction, TemplateFunction } from './chalk';
-export type { RGB, HSL } from './colors';
+export type { StyleFunction, TemplateFunction } from "./chalk";
+export type { RGB, HSL } from "./colors";
+export type { GradientOptions } from "./gradient";
+export type { Theme, ThemeStyles } from "./theme";

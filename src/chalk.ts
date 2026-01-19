@@ -1,310 +1,369 @@
-import { ANSI_CODES, supportsColor } from "./ansi";
-import { rgb, hex, hsl, COLORS } from "./colors";
+import {
+  ANSI_CODES,
+  getColorLevel,
+  rgbToAnsi256,
+  rgbToAnsi16,
+  AnsiCode,
+} from "./ansi";
+import { hexToRgb, hslToRgb, COLORS } from "./colors";
 
-/**
- * Styling function type
- */
-export type StyleFunction = (text: string) => string;
+export type Level = 0 | 1 | 2 | 3;
 
-/**
- * Template function type for template literals
- */
+export interface Options {
+  level?: Level;
+}
+
+export interface Styling {
+  open: string;
+  close: string;
+  closeRe: RegExp;
+}
+
 export type TemplateFunction = (
   template: TemplateStringsArray,
   ...substitutions: unknown[]
 ) => string;
 
+export type StyleFunction = ((text: unknown) => string) & ChalkTS;
+
 /**
- * Main ChalkTS class with all styling capabilities
+ * Main ChalkTS class
  */
 export class ChalkTS {
-  private readonly colorEnabled: boolean;
+  private readonly _level: Level;
+  private readonly _styles: Styling[];
 
-  constructor(enabled?: boolean) {
-    this.colorEnabled = enabled ?? supportsColor();
+  constructor(options: Options = {}) {
+    this._level = options.level ?? getColorLevel();
+    this._styles = [];
   }
 
   /**
-   * Apply ANSI codes to text
+   * Current color support level
    */
-  private apply(codes: string[], text: string): string {
-    if (!this.colorEnabled) return String(text);
-    if (text == null) return String(text);
-    if (text === "") return text;
-    return codes.join("") + text + ANSI_CODES.reset;
+  get level(): Level {
+    return this._level;
   }
 
   /**
-   * Create a new instance with color support disabled
+   * Apply styles to text with nesting support
    */
-  get disabled(): ChalkTS {
-    return new ChalkTS(false);
+  // @ts-ignore: used via dynamic access
+  private _apply(text: string): string {
+    if (this._level === 0 || !text) return text;
+
+    let result = String(text);
+
+    for (const style of this._styles.slice().reverse()) {
+      const { open, close, closeRe } = style;
+      if (result.includes(close)) {
+        // Handle nesting: Replace the closing code with (Close + Open) to restart the style
+        result = result.replace(closeRe, close + open);
+      }
+      result = open + result + close;
+    }
+
+    return result;
   }
 
   /**
-   * Create a new instance with color support enabled
+   * Builder method for extending styles
    */
-  get enabled(): ChalkTS {
-    return new ChalkTS(true);
+  private _builder(style: Styling): StyleFunction {
+    const newStyles = [...this._styles, style];
+
+    // Create the callable function
+    const builder = ((text: unknown) => {
+      // If called with template literal
+      if (Array.isArray(text) && (text as any).raw) {
+        return (builder as any)._apply(String(text));
+      }
+      return (builder as any)._apply(String(text));
+    }) as StyleFunction;
+
+    // Direct copy of properties to the function to allow chaining
+    Object.setPrototypeOf(builder, ChalkTS.prototype);
+    (builder as any)._level = this._level;
+    (builder as any)._styles = newStyles;
+
+    return builder;
   }
 
-  // Text styles
-  get bold(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bold]);
+  // --- Modifiers ---
+
+  get bold(): StyleFunction {
+    return this._style("bold");
+  }
+  get dim(): StyleFunction {
+    return this._style("dim");
+  }
+  get italic(): StyleFunction {
+    return this._style("italic");
+  }
+  get underline(): StyleFunction {
+    return this._style("underline");
+  }
+  get blink(): StyleFunction {
+    return this._style("blink");
+  }
+  get inverse(): StyleFunction {
+    return this._style("inverse");
+  }
+  get hidden(): StyleFunction {
+    return this._style("hidden");
+  }
+  get strikethrough(): StyleFunction {
+    return this._style("strikethrough");
   }
 
-  get dim(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.dim]);
+  // --- Foreground Colors ---
+
+  get black(): StyleFunction {
+    return this._style("black");
+  }
+  get red(): StyleFunction {
+    return this._style("red");
+  }
+  get green(): StyleFunction {
+    return this._style("green");
+  }
+  get yellow(): StyleFunction {
+    return this._style("yellow");
+  }
+  get blue(): StyleFunction {
+    return this._style("blue");
+  }
+  get magenta(): StyleFunction {
+    return this._style("magenta");
+  }
+  get cyan(): StyleFunction {
+    return this._style("cyan");
+  }
+  get white(): StyleFunction {
+    return this._style("white");
+  }
+  get gray(): StyleFunction {
+    return this._style("gray");
+  }
+  get grey(): StyleFunction {
+    return this._style("grey");
+  }
+  get blackBright(): StyleFunction {
+    return this._style("gray");
+  } // Alias
+  get redBright(): StyleFunction {
+    return this._style("redBright");
+  }
+  get greenBright(): StyleFunction {
+    return this._style("greenBright");
+  }
+  get yellowBright(): StyleFunction {
+    return this._style("yellowBright");
+  }
+  get blueBright(): StyleFunction {
+    return this._style("blueBright");
+  }
+  get magentaBright(): StyleFunction {
+    return this._style("magentaBright");
+  }
+  get cyanBright(): StyleFunction {
+    return this._style("cyanBright");
+  }
+  get whiteBright(): StyleFunction {
+    return this._style("whiteBright");
   }
 
-  get italic(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.italic]);
+  // --- Background Colors ---
+
+  get bgBlack(): StyleFunction {
+    return this._style("bgBlack");
+  }
+  get bgRed(): StyleFunction {
+    return this._style("bgRed");
+  }
+  get bgGreen(): StyleFunction {
+    return this._style("bgGreen");
+  }
+  get bgYellow(): StyleFunction {
+    return this._style("bgYellow");
+  }
+  get bgBlue(): StyleFunction {
+    return this._style("bgBlue");
+  }
+  get bgMagenta(): StyleFunction {
+    return this._style("bgMagenta");
+  }
+  get bgCyan(): StyleFunction {
+    return this._style("bgCyan");
+  }
+  get bgWhite(): StyleFunction {
+    return this._style("bgWhite");
+  }
+  get bgGray(): StyleFunction {
+    return this._style("bgGray");
+  }
+  get bgGrey(): StyleFunction {
+    return this._style("bgGrey");
+  }
+  get bgBlackBright(): StyleFunction {
+    return this._style("bgGray");
+  } // Alias
+  get bgRedBright(): StyleFunction {
+    return this._style("bgRedBright");
+  }
+  get bgGreenBright(): StyleFunction {
+    return this._style("bgGreenBright");
+  }
+  get bgYellowBright(): StyleFunction {
+    return this._style("bgYellowBright");
+  }
+  get bgBlueBright(): StyleFunction {
+    return this._style("bgBlueBright");
+  }
+  get bgMagentaBright(): StyleFunction {
+    return this._style("bgMagentaBright");
+  }
+  get bgCyanBright(): StyleFunction {
+    return this._style("bgCyanBright");
+  }
+  get bgWhiteBright(): StyleFunction {
+    return this._style("bgWhiteBright");
   }
 
-  get underline(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.underline]);
+  // --- Advanced Colors ---
+
+  rgb(r: number, g: number, b: number): StyleFunction {
+    if (this._level === 0)
+      return this._builder({ open: "", close: "", closeRe: /$^/ });
+
+    // Level 3: True Color
+    if (this._level >= 3) {
+      return this._builder({
+        open: `\u001B[38;2;${r};${g};${b}m`,
+        close: `\u001B[39m`,
+        closeRe: /\u001B\[39m/g,
+      });
+    }
+
+    // Level 2: ANSI 256
+    if (this._level >= 2) {
+      return this._builder({
+        open: `\u001B[38;5;${rgbToAnsi256(r, g, b)}m`,
+        close: `\u001B[39m`,
+        closeRe: /\u001B\[39m/g,
+      });
+    }
+
+    // Level 1: ANSI 16 (Downsampling)
+    return this._builder({
+      open: `\u001B[${rgbToAnsi16(r, g, b)}m`,
+      close: `\u001B[39m`,
+      closeRe: /\u001B\[39m/g,
+    });
   }
 
-  get blink(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.blink]);
+  hex(hex: string): StyleFunction {
+    const rgb = hexToRgb(hex);
+    return rgb ? this.rgb(rgb.r, rgb.g, rgb.b) : this._empty();
   }
 
-  get inverse(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.inverse]);
+  hsl(h: number, s: number, l: number): StyleFunction {
+    const rgb = hslToRgb(h, s, l);
+    return this.rgb(rgb.r, rgb.g, rgb.b);
   }
 
-  get hidden(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.hidden]);
+  bgRgb(r: number, g: number, b: number): StyleFunction {
+    if (this._level === 0)
+      return this._builder({ open: "", close: "", closeRe: /$^/ });
+
+    if (this._level >= 3) {
+      return this._builder({
+        open: `\u001B[48;2;${r};${g};${b}m`,
+        close: `\u001B[49m`,
+        closeRe: /\u001B\[49m/g,
+      });
+    }
+
+    if (this._level >= 2) {
+      return this._builder({
+        open: `\u001B[48;5;${rgbToAnsi256(r, g, b)}m`,
+        close: `\u001B[49m`,
+        closeRe: /\u001B\[49m/g,
+      });
+    }
+
+    return this._builder({
+      open: `\u001B[${rgbToAnsi16(r, g, b, true)}m`,
+      close: `\u001B[49m`,
+      closeRe: /\u001B\[49m/g,
+    });
   }
 
-  get strikethrough(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.strikethrough]);
+  bgHex(hex: string): StyleFunction {
+    const rgb = hexToRgb(hex);
+    return rgb ? this.bgRgb(rgb.r, rgb.g, rgb.b) : this._empty();
   }
 
-  // Foreground colors
-  get black(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.black]);
+  bgHsl(h: number, s: number, l: number): StyleFunction {
+    const rgb = hslToRgb(h, s, l);
+    return this.bgRgb(rgb.r, rgb.g, rgb.b);
   }
 
-  get red(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.red]);
+  // --- Extended Colors (using RGB) ---
+
+  get orange(): StyleFunction {
+    return this.rgb(255, 165, 0);
+  }
+  get purple(): StyleFunction {
+    return this.rgb(128, 0, 128);
+  }
+  get pink(): StyleFunction {
+    return this.rgb(255, 192, 203);
+  }
+  get brown(): StyleFunction {
+    return this.rgb(165, 42, 42);
   }
 
-  get green(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.green]);
-  }
-
-  get yellow(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.yellow]);
-  }
-
-  get blue(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.blue]);
-  }
-
-  get magenta(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.magenta]);
-  }
-
-  get cyan(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.cyan]);
-  }
-
-  get white(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.white]);
-  }
-
-  get gray(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.gray]);
-  }
-
-  get grey(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.grey]);
-  }
-
-  // Bright foreground colors
-  get redBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.redBright]);
-  }
-
-  get greenBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.greenBright]);
-  }
-
-  get yellowBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.yellowBright]);
-  }
-
-  get blueBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.blueBright]);
-  }
-
-  get magentaBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.magentaBright]);
-  }
-
-  get cyanBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.cyanBright]);
-  }
-
-  get whiteBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.whiteBright]);
-  }
-
-  // Background colors
-  get bgBlack(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgBlack]);
-  }
-
-  get bgRed(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgRed]);
-  }
-
-  get bgGreen(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgGreen]);
-  }
-
-  get bgYellow(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgYellow]);
-  }
-
-  get bgBlue(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgBlue]);
-  }
-
-  get bgMagenta(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgMagenta]);
-  }
-
-  get bgCyan(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgCyan]);
-  }
-
-  get bgWhite(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgWhite]);
-  }
-
-  get bgGray(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgGray]);
-  }
-
-  get bgGrey(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgGrey]);
-  }
-
-  // Bright background colors
-  get bgRedBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgRedBright]);
-  }
-
-  get bgGreenBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgGreenBright]);
-  }
-
-  get bgYellowBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgYellowBright]);
-  }
-
-  get bgBlueBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgBlueBright]);
-  }
-
-  get bgMagentaBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgMagentaBright]);
-  }
-
-  get bgCyanBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgCyanBright]);
-  }
-
-  get bgWhiteBright(): ChalkTS & StyleFunction {
-    return this.createStyler([ANSI_CODES.bgWhiteBright]);
-  }
-
-  // Advanced color methods
-  rgb(r: number, g: number, b: number): ChalkTS & StyleFunction {
-    return this.createStyler([rgb(r, g, b)]);
-  }
-
-  bgRgb(r: number, g: number, b: number): ChalkTS & StyleFunction {
-    return this.createStyler([rgb(r, g, b, true)]);
-  }
-
-  hex(color: string): ChalkTS & StyleFunction {
-    return this.createStyler([hex(color)]);
-  }
-
-  bgHex(color: string): ChalkTS & StyleFunction {
-    return this.createStyler([hex(color, true)]);
-  }
-
-  hsl(h: number, s: number, l: number): ChalkTS & StyleFunction {
-    return this.createStyler([hsl(h, s, l)]);
-  }
-
-  bgHsl(h: number, s: number, l: number): ChalkTS & StyleFunction {
-    return this.createStyler([hsl(h, s, l, true)]);
-  }
-
-  // Extended color palette
-  get orange(): ChalkTS & StyleFunction {
-    const color = COLORS.orange;
-    return this.createStyler([rgb(color.r, color.g, color.b)]);
-  }
-
-  get purple(): ChalkTS & StyleFunction {
-    const color = COLORS.purple;
-    return this.createStyler([rgb(color.r, color.g, color.b)]);
-  }
-
-  get pink(): ChalkTS & StyleFunction {
-    const color = COLORS.pink;
-    return this.createStyler([rgb(color.r, color.g, color.b)]);
-  }
-
-  get brown(): ChalkTS & StyleFunction {
-    const color = COLORS.brown;
-    return this.createStyler([rgb(color.r, color.g, color.b)]);
-  }
-
-  get lime(): ChalkTS & StyleFunction {
+  get lime(): StyleFunction {
     const color = COLORS.lime;
-    return this.createStyler([rgb(color.r, color.g, color.b)]);
+    return this.rgb(color.r, color.g, color.b);
   }
 
-  get indigo(): ChalkTS & StyleFunction {
+  get indigo(): StyleFunction {
     const color = COLORS.indigo;
-    return this.createStyler([rgb(color.r, color.g, color.b)]);
+    return this.rgb(color.r, color.g, color.b);
   }
 
-  get violet(): ChalkTS & StyleFunction {
+  get violet(): StyleFunction {
     const color = COLORS.violet;
-    return this.createStyler([rgb(color.r, color.g, color.b)]);
+    return this.rgb(color.r, color.g, color.b);
   }
 
-  get turquoise(): ChalkTS & StyleFunction {
-    return this.createStyler([rgb(64, 224, 208)]);
+  get turquoise(): StyleFunction {
+    const color = COLORS.turquoise;
+    return this.rgb(color.r, color.g, color.b);
   }
 
-  get gold(): ChalkTS & StyleFunction {
-    return this.createStyler([rgb(255, 215, 0)]);
+  get gold(): StyleFunction {
+    const color = COLORS.gold;
+    return this.rgb(color.r, color.g, color.b);
   }
 
-  get silver(): ChalkTS & StyleFunction {
-    return this.createStyler([rgb(192, 192, 192)]);
+  get silver(): StyleFunction {
+    const color = COLORS.silver;
+    return this.rgb(color.r, color.g, color.b);
   }
 
-  // Utility methods
+  // --- Utilities ---
+
   strip(text: string): string {
-    // Remove all ANSI escape sequences
-    return text.replace(/\u001B\[[0-9;]*m/g, "");
+    return text.replace(/\x1b\[[0-9;]*m/g, "");
   }
 
   length(text: string): number {
     return this.strip(text).length;
   }
 
-  // Template literal support
   template(
     template: TemplateStringsArray,
     ...substitutions: unknown[]
@@ -316,90 +375,86 @@ export class ChalkTS {
         result += String(substitutions[i]);
       }
     }
-    return result;
+    return (this as any)._apply(result);
   }
 
   /**
-   * Create a styled function that can be chained
+   * Helper to create a style from ANSI_CODES key
    */
-  private createStyler(codes: string[]): ChalkTS & StyleFunction {
-    const styler = (text: string) => this.apply(codes, text);
+  private _style(name: AnsiCode): StyleFunction {
+    if (this._level === 0) return this._empty();
 
-    // Create a new ChalkTS instance with accumulated codes
-    const newChalk = new ChalkTS(this.colorEnabled);
+    const codes = ANSI_CODES[name];
+    const openCode = Array.isArray(codes) ? codes[0] : codes;
+    const closeCode = Array.isArray(codes) ? codes[1] : codes; // Should always be pair now
 
-    // Copy all properties and methods to the styler function
-    Object.setPrototypeOf(styler, newChalk);
-    Object.assign(styler, newChalk);
+    return this._builder({
+      open: `\u001B[${openCode}m`,
+      close: `\u001B[${closeCode}m`,
+      closeRe: new RegExp(`\\u001B\\[${closeCode}m`, "g"),
+    });
+  }
 
-    // Override the createStyler method to accumulate codes
-    (styler as any).createStyler = (newCodes: string[]) => {
-      return this.createStyler([...codes, ...newCodes]);
-    };
-
-    return styler as ChalkTS & StyleFunction;
+  private _empty(): StyleFunction {
+    return this._builder({ open: "", close: "", closeRe: /$^/ });
   }
 }
 
-/**
- * Default instance
- */
 export const chalkTs = new ChalkTS();
 
-/**
- * Export individual color functions for convenience
- */
-export const {
-  bold,
-  dim,
-  italic,
-  underline,
-  blink,
-  inverse,
-  hidden,
-  strikethrough,
-  black,
-  red,
-  green,
-  yellow,
-  blue,
-  magenta,
-  cyan,
-  white,
-  gray,
-  grey,
-  redBright,
-  greenBright,
-  yellowBright,
-  blueBright,
-  magentaBright,
-  cyanBright,
-  whiteBright,
-  bgBlack,
-  bgRed,
-  bgGreen,
-  bgYellow,
-  bgBlue,
-  bgMagenta,
-  bgCyan,
-  bgWhite,
-  bgGray,
-  bgGrey,
-  bgRedBright,
-  bgGreenBright,
-  bgYellowBright,
-  bgBlueBright,
-  bgMagentaBright,
-  bgCyanBright,
-  bgWhiteBright,
-  orange,
-  purple,
-  pink,
-  brown,
-  lime,
-  indigo,
-  violet,
-  turquoise,
-  gold,
-  silver,
-} = chalkTs;
+// Export individual functions bound to the default instance
+export const bold = chalkTs.bold;
+export const dim = chalkTs.dim;
+export const italic = chalkTs.italic;
+export const underline = chalkTs.underline;
+export const blink = chalkTs.blink;
+export const inverse = chalkTs.inverse;
+export const hidden = chalkTs.hidden;
+export const strikethrough = chalkTs.strikethrough;
+
+export const black = chalkTs.black;
+export const red = chalkTs.red;
+export const green = chalkTs.green;
+export const yellow = chalkTs.yellow;
+export const blue = chalkTs.blue;
+export const magenta = chalkTs.magenta;
+export const cyan = chalkTs.cyan;
+export const white = chalkTs.white;
+export const gray = chalkTs.gray;
+export const grey = chalkTs.grey;
+export const redBright = chalkTs.redBright;
+export const greenBright = chalkTs.greenBright;
+export const yellowBright = chalkTs.yellowBright;
+export const blueBright = chalkTs.blueBright;
+export const magentaBright = chalkTs.magentaBright;
+export const cyanBright = chalkTs.cyanBright;
+export const whiteBright = chalkTs.whiteBright;
+
+export const bgBlack = chalkTs.bgBlack;
+export const bgRed = chalkTs.bgRed;
+export const bgGreen = chalkTs.bgGreen;
+export const bgYellow = chalkTs.bgYellow;
+export const bgBlue = chalkTs.bgBlue;
+export const bgMagenta = chalkTs.bgMagenta;
+export const bgCyan = chalkTs.bgCyan;
+export const bgWhite = chalkTs.bgWhite;
+export const bgGray = chalkTs.bgGray;
+export const bgGrey = chalkTs.bgGrey;
+export const bgRedBright = chalkTs.bgRedBright;
+export const bgGreenBright = chalkTs.bgGreenBright;
+export const bgYellowBright = chalkTs.bgYellowBright;
+export const bgBlueBright = chalkTs.bgBlueBright;
+export const bgMagentaBright = chalkTs.bgMagentaBright;
+export const bgCyanBright = chalkTs.bgCyanBright;
+export const bgWhiteBright = chalkTs.bgWhiteBright;
+
+export const orange = chalkTs.orange;
+export const purple = chalkTs.purple;
+export const pink = chalkTs.pink;
+export const brown = chalkTs.brown;
+export const lime = chalkTs.lime;
+export const indigo = chalkTs.indigo;
+export const violet = chalkTs.violet;
+export const turquoise = chalkTs.turquoise;
+export const gold = chalkTs.gold;
+export const silver = chalkTs.silver;

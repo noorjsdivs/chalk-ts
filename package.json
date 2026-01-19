@@ -1,6 +1,6 @@
 {
   "name": "chalk-ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "🎨 Modern terminal string styling library built with TypeScript - A better alternative to chalk with enhanced features and type safety",
   "main": "dist/index.js",
@@ -26,7 +26,7 @@
     "test:coverage": "jest --coverage",
     "type-check": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm run type-check && npm test",
-    "demo": "npm run build && node examples/demo.js",
+    "demo": "ts-node examples/demo.ts",
     "benchmark": "ts-node benchmarks/comparison.ts",
     "clean": "rm -rf dist"
   },
@@ -55,7 +55,7 @@
     "type": "git",
     "url": "https://github.com/noorjsdivs/chalk-ts.git"
   },
-  "homepage": "https://github.com/noorjsdivs/chalk-ts#readme",
+  "homepage": "https://www.reactbd.com/npm-packages/chalk-ts-typescript",
   "bugs": {
     "url": "https://github.com/noorjsdivs/chalk-ts/issues"
   },

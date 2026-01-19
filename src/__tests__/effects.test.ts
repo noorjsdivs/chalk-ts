@@ -1,5 +1,4 @@
 import {
-  gradient,
   rainbow,
   pulse,
   zebra,
@@ -10,11 +9,12 @@ import {
   spinner,
   table,
 } from "../effects";
+import { gradient } from "../gradient";
 
 describe("Effects", () => {
   describe("gradient", () => {
     test("should create gradient between two colors", () => {
-      const result = gradient("test", "#ff0000", "#0000ff");
+      const result = gradient("test", ["#ff0000", "#0000ff"]);
       // Check that when ANSI codes are stripped, we get the original text
       const stripped = result.replace(/\x1b\[[0-9;]*m/g, "");
       expect(stripped).toBe("test");
@@ -22,17 +22,14 @@ describe("Effects", () => {
     });
 
     test("should handle empty string", () => {
-      const result = gradient("", "#ff0000", "#0000ff");
+      const result = gradient("", ["#ff0000", "#0000ff"]);
       expect(result).toBe("");
     });
 
     test("should throw error for invalid colors", () => {
-      expect(() => gradient("test", "invalid", "#0000ff")).toThrow(
-        "Invalid hex colors provided"
-      );
-      expect(() => gradient("test", "#ff0000", "invalid")).toThrow(
-        "Invalid hex colors provided"
-      );
+      // Updated implementation returns original text for invalid colors
+      const result = gradient("test", ["invalid", "#0000ff"]);
+      expect(result).toBe("test");
     });
   });
 

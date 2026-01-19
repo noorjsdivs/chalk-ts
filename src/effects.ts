@@ -7,49 +7,7 @@ import { ChalkTS } from "./chalk";
 /**
  * Create a gradient effect between two colors
  */
-export function gradient(
-  text: string,
-  startColor: string,
-  endColor: string
-): string {
-  if (text.length === 0) return text;
-
-  const chalk = new ChalkTS();
-
-  // Parse hex colors
-  const parseHex = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result && result.length >= 4
-      ? {
-          r: parseInt(result[1]!, 16),
-          g: parseInt(result[2]!, 16),
-          b: parseInt(result[3]!, 16),
-        }
-      : null;
-  };
-
-  const start = parseHex(startColor);
-  const end = parseHex(endColor);
-
-  if (!start || !end) {
-    throw new Error("Invalid hex colors provided");
-  }
-
-  let result = "";
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    if (char) {
-      const ratio = i / (text.length - 1);
-      const r = Math.round(start.r + (end.r - start.r) * ratio);
-      const g = Math.round(start.g + (end.g - start.g) * ratio);
-      const b = Math.round(start.b + (end.b - start.b) * ratio);
-
-      result += chalk.rgb(r, g, b)(char);
-    }
-  }
-
-  return result;
-}
+// gradient has been moved to gradient.ts
 
 /**
  * Create a rainbow effect
@@ -133,7 +91,7 @@ export function neon(text: string, color = "cyan"): string {
 export function shadow(
   text: string,
   color = "white",
-  shadowColor = "gray"
+  shadowColor = "gray",
 ): string {
   const chalk = new ChalkTS();
   const lines = text.split("\n");
@@ -163,7 +121,7 @@ export function box(
     padding?: number;
     color?: string;
     style?: "single" | "double" | "rounded" | "thick";
-  } = {}
+  } = {},
 ): string {
   const { padding = 1, color = "white", style = "single" } = options;
   const chalk = new ChalkTS();
@@ -217,10 +175,10 @@ export function box(
   const width = maxLength + padding * 2;
 
   const topLine = (chalk as any)[color](
-    chars.topLeft + chars.top.repeat(width) + chars.topRight
+    chars.topLeft + chars.top.repeat(width) + chars.topRight,
   );
   const bottomLine = (chalk as any)[color](
-    chars.bottomLeft + chars.bottom.repeat(width) + chars.bottomRight
+    chars.bottomLeft + chars.bottom.repeat(width) + chars.bottomRight,
   );
 
   let result = topLine + "\n";
@@ -269,7 +227,7 @@ export function progressBar(
     incomplete?: string;
     showPercentage?: boolean;
     color?: string;
-  } = {}
+  } = {},
 ): string {
   const {
     width = 20,
@@ -315,7 +273,7 @@ export function table(
     headerColor?: string;
     borderColor?: string;
     padding?: number;
-  } = {}
+  } = {},
 ): string {
   const {
     headers,
@@ -332,14 +290,14 @@ export function table(
   if (!firstRow || firstRow.length === 0) return "";
 
   const columnWidths = firstRow.map((_, colIndex) =>
-    Math.max(...allRows.map((row) => row[colIndex]?.length || 0))
+    Math.max(...allRows.map((row) => row[colIndex]?.length || 0)),
   );
 
   let result = "";
 
   // Top border
   const topBorder = (chalk as any)[borderColor](
-    "┌" + columnWidths.map((w) => "─".repeat(w + padding * 2)).join("┬") + "┐"
+    "┌" + columnWidths.map((w) => "─".repeat(w + padding * 2)).join("┬") + "┐",
   );
   result += topBorder + "\n";
 
@@ -360,7 +318,9 @@ export function table(
 
     // Header separator
     const separator = (chalk as any)[borderColor](
-      "├" + columnWidths.map((w) => "─".repeat(w + padding * 2)).join("┼") + "┤"
+      "├" +
+        columnWidths.map((w) => "─".repeat(w + padding * 2)).join("┼") +
+        "┤",
     );
     result += separator + "\n";
   }
@@ -386,7 +346,7 @@ export function table(
 
   // Bottom border
   const bottomBorder = (chalk as any)[borderColor](
-    "└" + columnWidths.map((w) => "─".repeat(w + padding * 2)).join("┴") + "┘"
+    "└" + columnWidths.map((w) => "─".repeat(w + padding * 2)).join("┴") + "┘",
   );
   result += bottomBorder;
 
