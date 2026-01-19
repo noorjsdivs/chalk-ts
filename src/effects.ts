@@ -1,4 +1,4 @@
-import { ChalkTS } from "./chalk";
+import { ChalkTS, Level } from "./chalk";
 
 /**
  * Advanced styling utilities and effects
@@ -12,10 +12,13 @@ import { ChalkTS } from "./chalk";
 /**
  * Create a rainbow effect
  */
-export function rainbow(text: string): string {
+export function rainbow(text: string, options: { level?: Level } = {}): string {
   if (text.length === 0) return text;
 
-  const chalk = new ChalkTS();
+  const chalk =
+    options.level !== undefined
+      ? new ChalkTS({ level: options.level })
+      : new ChalkTS();
   const colors: readonly [number, number, number][] = [
     [255, 0, 0], // Red
     [255, 127, 0], // Orange
@@ -45,8 +48,15 @@ export function rainbow(text: string): string {
 /**
  * Create pulsing effect (alternating bright and dim)
  */
-export function pulse(text: string, color = "white"): string {
-  const chalk = new ChalkTS();
+export function pulse(
+  text: string,
+  color = "white",
+  options: { level?: Level } = {},
+): string {
+  const chalk =
+    options.level !== undefined
+      ? new ChalkTS({ level: options.level })
+      : new ChalkTS();
   let result = "";
 
   for (let i = 0; i < text.length; i++) {
@@ -64,8 +74,16 @@ export function pulse(text: string, color = "white"): string {
 /**
  * Create zebra stripes effect (alternating colors)
  */
-export function zebra(text: string, color1 = "white", color2 = "gray"): string {
-  const chalk = new ChalkTS();
+export function zebra(
+  text: string,
+  color1 = "white",
+  color2 = "gray",
+  options: { level?: Level } = {},
+): string {
+  const chalk =
+    options.level !== undefined
+      ? new ChalkTS({ level: options.level })
+      : new ChalkTS();
   let result = "";
 
   for (let i = 0; i < text.length; i++) {
@@ -80,8 +98,15 @@ export function zebra(text: string, color1 = "white", color2 = "gray"): string {
 /**
  * Create a neon effect
  */
-export function neon(text: string, color = "cyan"): string {
-  const chalk = new ChalkTS();
+export function neon(
+  text: string,
+  color = "cyan",
+  options: { level?: Level } = {},
+): string {
+  const chalk =
+    options.level !== undefined
+      ? new ChalkTS({ level: options.level })
+      : new ChalkTS();
   return (chalk as any)[color].bold.underline(text);
 }
 
@@ -92,8 +117,12 @@ export function shadow(
   text: string,
   color = "white",
   shadowColor = "gray",
+  options: { level?: Level } = {},
 ): string {
-  const chalk = new ChalkTS();
+  const chalk =
+    options.level !== undefined
+      ? new ChalkTS({ level: options.level })
+      : new ChalkTS();
   const lines = text.split("\n");
   let result = "";
 
@@ -121,10 +150,11 @@ export function box(
     padding?: number;
     color?: string;
     style?: "single" | "double" | "rounded" | "thick";
+    level?: Level;
   } = {},
 ): string {
-  const { padding = 1, color = "white", style = "single" } = options;
-  const chalk = new ChalkTS();
+  const { padding = 1, color = "white", style = "single", level } = options;
+  const chalk = level !== undefined ? new ChalkTS({ level }) : new ChalkTS();
 
   const styles = {
     single: {
@@ -227,6 +257,7 @@ export function progressBar(
     incomplete?: string;
     showPercentage?: boolean;
     color?: string;
+    level?: Level;
   } = {},
 ): string {
   const {
@@ -235,9 +266,10 @@ export function progressBar(
     incomplete = "░",
     showPercentage = true,
     color = "green",
+    level,
   } = options;
 
-  const chalk = new ChalkTS();
+  const chalk = level !== undefined ? new ChalkTS({ level }) : new ChalkTS();
   const percentage = Math.min(100, Math.max(0, (progress / total) * 100));
   const completedWidth = Math.round((percentage / 100) * width);
   const remainingWidth = width - completedWidth;
@@ -256,8 +288,15 @@ export function progressBar(
 /**
  * Create a spinner animation frame
  */
-export function spinner(frame: number, color = "cyan"): string {
-  const chalk = new ChalkTS();
+export function spinner(
+  frame: number,
+  color = "cyan",
+  options: { level?: Level } = {},
+): string {
+  const chalk =
+    options.level !== undefined
+      ? new ChalkTS({ level: options.level })
+      : new ChalkTS();
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   const spinnerChar = frames[frame % frames.length];
   return (chalk as any)[color](spinnerChar);
@@ -273,6 +312,7 @@ export function table(
     headerColor?: string;
     borderColor?: string;
     padding?: number;
+    level?: Level;
   } = {},
 ): string {
   const {
@@ -280,8 +320,9 @@ export function table(
     headerColor = "cyan",
     borderColor = "gray",
     padding = 1,
+    level,
   } = options;
-  const chalk = new ChalkTS();
+  const chalk = level !== undefined ? new ChalkTS({ level }) : new ChalkTS();
 
   if (data.length === 0) return "";
 

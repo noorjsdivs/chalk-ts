@@ -12,7 +12,7 @@
     "next": "16.1.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "chalk-ts": "^1.0.1"
+    "chalk-ts": "^1.0.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

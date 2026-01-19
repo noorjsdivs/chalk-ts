@@ -1,4 +1,4 @@
-import { chalkTs } from "./chalk";
+import { ChalkTS, Level } from "./chalk";
 import { hexToRgb } from "./colors";
 
 /**
@@ -6,6 +6,7 @@ import { hexToRgb } from "./colors";
  */
 export interface GradientOptions {
   interpolation?: "rgb"; // Extendable to HSL later
+  level?: Level;
 }
 
 /**
@@ -14,7 +15,7 @@ export interface GradientOptions {
 export function gradient(
   text: string,
   colors: string[],
-  _options: GradientOptions = {},
+  options: GradientOptions = {},
 ): string {
   if (!text || colors.length < 2) return text;
 
@@ -25,6 +26,11 @@ export function gradient(
   const stops = rgbColors as { r: number; g: number; b: number }[];
   const steps = text.length;
   let result = "";
+
+  const chalk =
+    options.level !== undefined
+      ? new ChalkTS({ level: options.level })
+      : new ChalkTS();
 
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1 || 1);
@@ -46,7 +52,7 @@ export function gradient(
     const g = Math.round(start.g + (end.g - start.g) * segmentT);
     const b = Math.round(start.b + (end.b - start.b) * segmentT);
 
-    result += chalkTs.rgb(r, g, b)(text[i]!);
+    result += chalk.rgb(r, g, b)(text[i]!);
   }
 
   return result;

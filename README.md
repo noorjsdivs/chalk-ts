@@ -785,6 +785,7 @@ Inspired by:
 If you have any questions or need help, please:
 
 - 🌐 **Homepage**: [reactbd.com/npm-packages/chalk-ts-typescript](https://www.reactbd.com/npm-packages/chalk-ts-typescript)
+- 🎮 **Playground**: [chalk.reactbd.com](https://chalk.reactbd.com/)
 - 📦 **NPM**: [npmjs.com/package/chalk-ts](https://www.npmjs.com/package/chalk-ts)
 - 💻 **GitHub**: [github.com/noorjsdivs/chalk-ts](https://github.com/noorjsdivs/chalk-ts)
 - 🐛 **Issues**: [GitHub Issues](https://github.com/noorjsdivs/chalk-ts/issues)
