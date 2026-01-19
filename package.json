@@ -1,6 +1,6 @@
 {
   "name": "chalk-ts",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "type": "module",
   "description": "🎨 Modern terminal string styling library built with TypeScript - A better alternative to chalk with enhanced features and type safety",
   "main": "dist/index.js",
