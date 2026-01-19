@@ -35,7 +35,7 @@
 
 ## 🌐 Interactive Demo
 
-Try out all features in your browser: **[Live Web Demo](https://www.reactbd.com/npm-packages/chalk-ts-typescript)**
+Try out all features in your browser: **[Live Web Demo](https://chalk.reactbd.com/)**
 
 The demo includes:
 
